@@ -169,7 +169,7 @@ umd_courses |>
   summarise(
     count_classes = n()
   ) |>
-  arrange(term, department)
+  arrange(desc(count_classes), department)
 ```
 
 Compared to the previous codeblock, how did the output change and what in the code changed it?
@@ -223,7 +223,9 @@ umd_courses |>
     mean_seats = mean(seats),
     median_seats = median(seats),
     # add minimum seats here
+    minimum_seats = min(seats),
     # add maximum seats here
+    maximum_seats = max(seats)
   ) |>
   arrange(desc(total_seats))
 ```
