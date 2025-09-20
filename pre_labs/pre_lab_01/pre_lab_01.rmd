@@ -240,8 +240,8 @@ No code here; I want you to provide three questions that this data suggests to y
 
 **Answer**
 
-1.  
+1.   Which department's number of courses is in the biggest decline?
 
-2.  
+2.  For those instructors who has taught for over 5 years, which instructors teach different courses every single year? And which one teach the same courses every year?
 
-3.  
+3.  Which department opened the highest number of courses without prerequisites and restrictions?
