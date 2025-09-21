@@ -40,7 +40,7 @@ head(umd_courses)
 
 ## Answer questions
 
-**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you? **A1: Computer, math, and natural sciences is the department with highest average seats, which is 440.**
+**Q1** Which department has the highest mean (average) number of seats for its classes? You need to show the department with the highest average first. Which one is the most surprising/interesting to you? **A1: Computer, math, and natural sciences department, with 440 average seats, is the highest among other departments. It's interesting that the highest one is even over two times higher than the second highest department, Engineering, cooperative education, which has 200 average number of seats.**
 
 ```{r}
 umd_courses |>
@@ -55,23 +55,65 @@ umd_courses |>
 
 ```
 
-**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2**
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2: Doctoral Dissertation Research has been offered 1686 times, which is the greatest one among all individual class.**
 
 ```{r}
+umd_courses |> 
+  group_by(title) |>
+  summarise(
+    offer_times = n()
+  )|>
+  arrange(desc(offer_times))
 ```
 
-**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3**
+**Q3** Count the number of courses for each instructor and department. Which instructor has taught the most? **A3:** Keith Yearwood has taught the most courses. He has offered 79 Geographical Sciences course in total.
 
 ```{r}
+instr_count = umd_courses |>
+  group_by(instructors, department) |>
+  summarise(
+    course_num = n()
+  )|>
+  arrange(desc(course_num))
+instr_count
 ```
 
-**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4**
+**Q4** Given the results for Q3, what would have made it easier to find the answer? You don't have to know *how* to accomplish this; I want you to describe in words what would make the answer easier to see. How confident are you that the answer you got is the right one, and why? **A4:** I will filter the data set with instructors that are not equal to "NA" & "Instructor: TBA".
 
 ```{r}
-
+filter(instr_count, instructors != "NA" & instructors !="Instructor: TBA")
 ```
 
-**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5**
+**Q5** Take one of the questions you listed in the final question of the pre_lab and try to answer it here in code. If you don't know how to fully answer it, write what code you can and describe in words what else you would need to do. If you got an answer, is it interesting? **A5:**
+
+To answer "Which department's number of courses is in the biggest decline?", I need to create a pivot table, with department be my first column, then I need to create a column counting how many courses each department have in term "201801", the second column counting how many courses each department have in term "202501" and the third column calculating the growth or decline rate for each department.
+
+(I calculate the growth from 201801 to 202501, although "201712" is the earliest term I have in the data set, the courses offered in December significantly lower than other term, so I skipped that.)
 
 ```{r}
+count_classes = umd_courses |>
+  group_by(department, term) |>
+  summarise(
+   count_classes = n()
+  )
+count_classes
+```
+
+```{r}
+#I ask claude with the following prompt "My original dataset has 3 columns, with first one as department name, second is term of semester, and third is the number of courses each semester offered in the department. I need to create a pivot table, with department be my first column, then I need to create a second column counting how many courses each department have in term "201801", the third column counting how many courses each department have in term "202501" and the forth column calculating the growth or decline rate for each department."
+biggest_decline_department <- count_classes %>%
+  filter(term %in% c("201801", "202501")) %>%
+  pivot_wider(names_from = term, values_from = count_classes) %>%
+  mutate(
+    growth_rate = round(((`202501` - `201801`) / `201801`) * 100, 2)
+  ) %>%
+  # Rename columns to be more descriptive (optional)
+  rename(
+    `Courses_201801` = `201801`,
+    `Courses_202501` = `202501`,
+    `Growth_Rate_%` = growth_rate
+  ) |>
+  arrange(`Growth_Rate_%`)
+
+print(biggest_decline_department)
 ```
