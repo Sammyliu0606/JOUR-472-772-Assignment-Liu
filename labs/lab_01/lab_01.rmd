@@ -55,11 +55,11 @@ umd_courses |>
 
 ```
 
-**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2: Doctoral Dissertation Research has been offered 1686 times, which is the greatest one among all individual class.**
+**Q2** Find out the greatest number of times any individual class has been offered in our dataset. Your code must show the greatest number of classes first. **A2: There are 145 courses offered 29 times, which is the greatest number.**
 
 ```{r}
 umd_courses |> 
-  group_by(title) |>
+  group_by(id) |>
   summarise(
     offer_times = n()
   )|>
