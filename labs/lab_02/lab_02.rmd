@@ -76,11 +76,11 @@ maryland_expenses <- maryland_expenses |> mutate(expenditure_date = mdy(expendit
 ```
 
 ```{r}
-maryland_expenses |> mutate(expenditure_month = month(expenditure_date)) |>
+maryland_expenses |> mutate(expenditure_month = floor_date(expenditure_date, "month")) |>
   filter(committee_name == "Moore  Wes For Maryland") |>
   group_by(expenditure_month)|>
   summarise(
-    monthly_expenditure = n()
+    monthly_expenditure = sum(amount)
   )
 ```
 
