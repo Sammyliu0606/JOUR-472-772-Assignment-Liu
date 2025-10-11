@@ -1,0 +1,178 @@
+---
+title: "lab_04_ai"
+author: "Daniel Trielli"
+date: "2024-09-26"
+output: html_document
+---
+
+## Setup
+
+Let's load the necessary libraries and, using your API key, setup your credentials:
+
+```{r}
+library(axolotr)
+create_credentials(GROQ_API_KEY = "")
+```
+
+See that "Please restart your R session for changes to take effect."? Go ahead and do that; you'll need to rerun the `library()` function for axolotr, and let's load tidyverse while we're at it.\
+
+```{r}
+library(axolotr)
+library(tidyverse)
+```
+
+## Testing
+
+Let's make sure that worked. We'll be using the [Llama 3.1 model released by Meta](https://ai.meta.com/blog/meta-llama-3-1/).
+
+```{r}
+groq_response <- axolotr::ask(
+  prompt = "Give me a 100-word pitch for a new Lilo and Stitch sequel",
+  model = "llama-3.1-8b-instant"
+)
+
+groq_response
+```
+
+Did that work?
+
+## Q1. Turning unstructured information into data: let's take [this article](https://www.nytimes.com/2024/09/27/arts/maggie-smith-dead.html) about the death of Dame Maggie Smith and try to extract information from it. Your goal is to have Groq create a table with the films and TV shows mentioned in this news article, and extract the following information about them: title, year, role, director, co-stars, and awards. From the table that it created, answer this: is the information correct? Did all information come from the article text?
+
+```{r}
+#Loading article text
+text = "Maggie Smith, one of the finest British stage and screen actors of her generation, whose award-winning roles ranged from a freethinking Scottish schoolteacher in /“The Prime of Miss Jean Brodie/” to the acid-tongued dowager countess on /“Downton Abbey,/” died on Friday in London. She was 89.
+
+Her death, in a hospital, was announced by her family in a statement issued by a publicist. The statement gave no cause of death.
+
+American moviegoers barely knew Ms. Smith (now Dame Maggie to her countrymen) when she starred in /“The Prime of Miss Jean Brodie/” (1969), about a 1930s girls’-school teacher who dared to have progressive social views — and a love life. Vincent Canby’s review in The New York Times described her performance as /“a staggering amalgam of counterpointed moods, switches in voice levels and obliquely stated emotions, all of which are precisely right./” It brought her the Academy Award for best actress.
+
+She won a second Oscar, for best supporting actress, for /“California Suite/” (1978), based on Neil Simon’s stage comedy. Her character, a British actress attending the Oscars with her bisexual husband (Michael Caine), has a disappointing evening at the ceremony and a bittersweet night in bed.
+
+In real life, prizes had begun coming Ms. Smith’s way in the 1950s, when at 20 she won her first Evening Standard Award. By the turn of the millennium, she had the two Oscars, two Tonys, two Golden Globes, half a dozen Baftas (British Academy of Film and Television Awards) and scores of nominations. Yet she could go almost anywhere unrecognized.
+
+Until /“Downton Abbey./”
+
+That series followed the Earl of Grantham (Hugh Bonneville), his mostly aristocratic family and his troubled household staff at their grand Jacobean mansion as the world around them, between 1912 and 1925, refused to stand still.
+
+After its 2010 British premiere and its 2011 American debut, the show ran six seasons. Its breakout star, from the beginning, was Ms. Smith, playing Lord Grantham’s elderly and still stubbornly Victorian widowed mother, Violet Crawley, the dowager countess. She disapproved of electric lights, was unfamiliar with the word /“weekend/” and never met a person or situation she couldn’t ridicule with withering imperiousness. When her daughter-in-law considered sending a younger relative for a stay in New York, Lady Violet objected: /“Oh, I don’t think things are quite that desperate./”
+
+Suddenly, in her mid-70s, Ms. Smith was a megastar.
+
+/“It’s ridiculous. I’d led a perfectly normal life until ‘Downton Abbey,’ /” she told Mark Lawson at the B.F.I. and Radio Times Festival in 2017, adding later: /“Nobody knew who the hell I was./”
+
+The closest Ms. Smith had come to such visibility was with the Harry Potter movies. She was Minerva McGonagall, the Hogwarts School’s stern but fearless transformation teacher, in seven of the eight films, from /“Harry Potter: The Sorceror’s Stone/” (2001) to /“Harry Potter: The Deathly Hallows Part 2/” (2011).
+
+McGonagall, wearing high-necked Victorian-style gowns, a distinctive Scottish brooch, and upswept hair beneath a tall, black witch’s hat, was a striking onscreen presence. Yet Ms. Smith did not find herself constantly pursued in public, except by children.
+
+/“A lot of very small people kind of used to say hello to me, and that was nice,/” she recalled on /“The Graham Norton Show/” in 2015. One boy carefully asked her, /“Were you really a cat?/”)"
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+showtable_response <- axolotr::ask(
+  prompt = paste("Given the following text, extract information about the films and TV shows mentioned in this news article that Maggie Smith starred in into a 6-column CSV including headers, with no yapping: title, year, role, director, co-stars, and awards. The columns respectively means the artwork's title, the year it played, the character Maggie Smith played in the artwork, director of the artwork, stars that co-played in the artwork and the awards that Maggie Smith received", text),
+  model = "llama-3.1-8b-instant"
+)
+showtable_response_df <- read_csv(showtable_response)
+
+```
+
+**Answer: Not all of the information come from the text I feed in, especially the director and co-stars.**
+
+------------------------------------------------------------------------
+
+## Q2. Helping with code explanation: Your data journalism instructor has given you a block of code but you can't make sense of it. Ask Groq if it can explain what the code does with this UMD course. Is the answer correct?
+
+```{r}
+# Loading R code example
+r_code_example = 'umd_courses |>
+  filter(str_detect(title, "Climate") & seats > 0) |>
+  group_by(department) |>
+  summarize(classes = n()) |>
+  arrange(desc(classes))'
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+explainR_response <- axolotr::ask(
+  prompt = paste("Given the following r code example, please explain what this block of code does with the umd course", r_code_example),
+  model = "llama-3.1-8b-instant"
+)
+explainR_response
+```
+
+**Answer: Yes the answer is correct.**
+
+------------------------------------------------------------------------
+
+## Q3. Helping with code debugging: paste the code block of an answer you had for a previous lab down here and ask Grok if that code is correct, based on the question in the lab. What do you think about its response?
+
+```{r}
+#Loading lab question
+lab_question = 'Using case_when(), create a column in the Maryland expenses data called spending_location indicating whether each record indicated money spent in Maryland or outside Maryland, based on the address column of the \'maryland_expenses\' dataset. For records that are in Maryland, make the new column\'s value \"In-state\" and for the others, make it \"Out of state\". Then write code that shows the total amount of money spent in each category and describe the results. You can do this in one statement or break it up into two statements (saving the new column to your dataframe).'
+
+
+#Paste the code block here, between the quotes. If your code has quotes or single quotes, you have to add a \ before each one so R doesn't break.
+
+your_r_code_lab = "
+maryland_expenses <- maryland_expenses |> 
+  mutate(spending_location = case_when(
+    str_detect(address, \"Maryland\") ~ \"In-state\",
+    .default = \"Out of state\") )
+
+maryland_expenses |>
+  group_by(spending_location)|>
+  summarise(
+    spending_amounts = sum(amount, na.rm = TRUE)
+  )
+"
+
+
+```
+
+```{r}
+#Add code below to talk to Groq and display its response
+code_evaluate_response <- axolotr::ask(
+  prompt = paste("Given the following lab question, does my r code lab correctly address the question?", lab_question, your_r_code_lab),
+  model = "llama-3.1-8b-instant"
+)
+code_evaluate_response
+```
+
+**Answer: I think it's alright, but I'm always annoyed by the output format of groq... It's hard to read and also if I want to use the code it suggests, the "\\n" and "\\" along the way prevent me from select, copy and execute, which comparing to other LLM to less efficient to use and debug.**
+
+------------------------------------------------------------------------
+
+## Q4. Brainstorming about strategies for data analysis and visualization: ask Groq to give you ideas about potential news stories from data analyses using [this data set](https://data.montgomerycountymd.gov/Public-Safety/Crash-Reporting-Incidents-Data/bhju-22kf/about_data). You're going to have to describe the dataset so that Groq can make some suggestions. What do you think of its response?
+
+```{r}
+#Add code below to talk to Groq and display its response
+#crash_incident_data <- read.csv("/Users/sammyliu/Documents/GitHub/JOUR-472-772-Assignment-Liu/labs/lab_04/Crash_Reporting__Incidents_Data_20251010.csv", nrows = 50)
+
+crash_incident_data = "The dataset provides information about each traffic collisions occurring on county and local roadways within Montgomery County, including report type identifies crash as property, injury, or fatal, fault by a driver or non-motorist,type of collision, date and time of crash, location - distance from mile point, substance abuse detected for all drivers involved, the first event of the collision, Unit - Vehicle left the scene resulting in a hit and run event, intersection characteristics (if the collision was intersection related),  type of junction where the collision occurred, Road/Area - Lane direction of travel, Road/Area - Type of roadway/area lane, Y coordinate of crash location, Lighting conditions, Case number from the local investigating agency for the incident, X coordinate of crash location, Jurisdiction for crash location, Substance abuse detected for all non-motorists involved, Road/Area - Number of lanes, Description of location for off-road collisions, Type(s) of non-motorist involved, ACRS Report Number assigned to the incident, The road alignment where the collision occurred, The condition of the road when the collision occurred, The road division where the collision occurred, Road/Area - Roadway grade, Name of road, Type of roadway at crash location, The second event of the collision (if applicable), Condition of roadway surface, Signage or traffic control devices, Weather at collision location"
+```
+
+```{r}
+storyideas_brainstorm <- axolotr::ask(
+  prompt = paste("Read the crash incident data description about each collision occurring within Montgomery County, come up with 3 potential news stories ideas based on the data analysis", crash_incident_data),
+  model = "llama-3.1-8b-instant"
+)
+storyideas_brainstorm
+```
+
+**Answer: I try to make it read several rows of csv so that it can brainstorm based on the columns I have, but it kept running error. I assume it might because groq find the data is still to big, but even after I tried typing in the data description manually, it still cannot work. And I tried to run my prior answers all over again, none of them can work.... So, sorry to turn in the lab like this without proper answer, but i think maybe I am running out of the free token I can use.**
+
+------------------------------------------------------------------------
+
+## Q5. Using AI to write news articles: ask Groq to write a 500-word news article about a car crash at the intersection between Knox Road and Regents Drive. What issues or problems do you see with the output?
+
+```{r}
+#Add code below to talk to Groq and display its response
+car_crash_story <- axolotr::ask(
+  prompt ="write a 500-word news article about a car crash at the intersection between Knox Road and Regents Drive.",
+  model = "llama-3.1-8b-instant"
+)
+car_crash_story 
+```
+
+**Answer: I cannot see the answer. But I think one of the issues might be the article would not align with AP style. I also think lots of time AI might edit interviewee's quote to make it sounds more smooth and straightforward, which is not allowed in real cases.**

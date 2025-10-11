@@ -64,6 +64,13 @@ pg_school |>
   )
 
 ```
+```{r}
+cleaned_payments |>
+  mutate(agency_name = str_to_upper(agency_name), vendor_name = str_to_upper(vendor_name)) |>
+  filter(str_detect(vendor_name, "SCHOOL")) |>
+  group_by(vendor_name) |>
+  summarise(vendor_num = n())
+```
 
 Q2: Using that `pg_schools` dataframe, write code to calculate the total amount of payments to the Prince George's County School system for each fiscal year. Which fiscal year had the largest total amount? Are there any aspects of the results that stand out to you?
 
@@ -95,7 +102,7 @@ capitol_project_UMD <- cleaned_payments |>
   filter(str_detect(agency_name, "CAPITAL PROJECT"))|>
   filter(str_detect(agency_name, "MARYLAND"))
 
-capitol_project_UMD |>
+vendors_paid_capitol_project_UMD |>
   group_by(vendor_name)|>
   summarise(
     paid_amount = sum(amount)
